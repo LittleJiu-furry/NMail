@@ -1,0 +1,4 @@
+smtp:
+  cert: certFilePath
+  key: keyFilePath
+  password: password
