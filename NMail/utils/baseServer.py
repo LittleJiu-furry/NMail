@@ -1,15 +1,16 @@
 import asyncio
 import ssl
-from typing import Optional, TypeAlias
+from typing import Optional, TypeAlias, Callable
 from .event import EventManager
 from .logger import createLogger
 from os import PathLike
 
 logger = createLogger()
 StrOrBytesPath: TypeAlias = str | bytes | PathLike[str] | PathLike[bytes]
+_PasswordType: TypeAlias = Callable[[], str | bytes | bytearray] | str | bytes | bytearray
 
 class AsyncSocketServer(EventManager):
-    def __init__(self, port: int, cretfile: StrOrBytesPath, keyfile: StrOrBytesPath, password: Optional[ssl._PasswordType] = None):
+    def __init__(self, port: int, cretfile: StrOrBytesPath, keyfile: StrOrBytesPath, password: Optional[_PasswordType] = None):
         super().__init__()
         logger.info(f"Server set port to {port}")
         self.port = port
