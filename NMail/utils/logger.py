@@ -11,7 +11,7 @@ def createLogger():
     logger.add(
         sys.stdout, 
         level="INFO", 
-        format="[<cyan>{time:YYYY-MM-DD HH:mm:ss.SSS}</cyan>] [<bold><level>{level: ^8}</level></bold>] <level>{message}</level>", 
+        format="[<cyan>{time:YYYY-MM-DD HH:mm:ss.SSS}</cyan>] [<bold><level>{level: ^8}</level></bold>] [{name}] <level>{message}</level>", 
         colorize=True
     )
     ctx.set("logger_setted", True)
