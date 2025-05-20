@@ -25,8 +25,12 @@ class AsyncSocketServer(EventManager):
     
     # 处理函数，这里主要用于处理链接后事件的触发
     async def __handler(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
-        # 触发事件
-        self.emit("onHandle", reader, writer)
+        # 由于要保持链接，所以这里不能使用emit方法触发事件
+        # 直接调用事件处理函数
+        await self.onHandle(reader, writer)
+        writer.close()
+        await writer.wait_closed()
+        
 
     async def start(self):
         if self.isConnected:
@@ -70,7 +74,10 @@ class AsyncSocketServer(EventManager):
     async def onStop(self):
         logger.info("Server stopped")
         raise NotImplementedError("onStop method not implemented")
-        
+    
+    async def onHandle(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
+        logger.info("Client connected")
+        raise NotImplementedError("onHandle method not implemented")
 
     def __setSubscribe(self):
         self.subscribe("onStart", self.onStart)
