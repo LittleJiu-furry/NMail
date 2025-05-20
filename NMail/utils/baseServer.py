@@ -30,7 +30,7 @@ class AsyncSocketServer(EventManager):
         await self.onHandle(reader, writer)
         writer.close()
         await writer.wait_closed()
-        
+        logger.info(f"Client {writer.get_extra_info('peername')} disconnected")
 
     async def start(self):
         if self.isConnected:
