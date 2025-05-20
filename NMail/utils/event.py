@@ -44,7 +44,7 @@ class EventManager:
             return wrapperAsync
         else:
             return wrapper
+      
         
-
     def clear(self):
         self._listeners.clear()
