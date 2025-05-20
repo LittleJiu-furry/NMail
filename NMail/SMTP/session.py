@@ -46,6 +46,7 @@ class SMTPSession:
 
     async def service(self):
         async for data in self.__GetData():
-            ...
+            logger.info(f"Recevied: {data}")
+            break
 
 

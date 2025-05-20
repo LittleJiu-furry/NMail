@@ -5,15 +5,16 @@ class SMTPCommand(StrEnum):
     EHLO = "EHLO" # 扩展问候命令
     MAIL = "MAIL" # 邮件发送命令
     RCPT = "RCPT" # 邮件接收命令
-    DATA = "DATA" # 邮件数据命令
+    DATA = "DATA" # 邮件数据命令, 特殊指令
     RSET = "RSET" # 重置命令
-    VRFY = "VRFY" # 验证命令
-    EXPN = "EXPN" # 扩展命令
-    HELP = "HELP" # 帮助命令
+    VRFY = "VRFY" # 验证命令, 暂时不用管
+    EXPN = "EXPN" # 扩展命令, 暂时不用管
+    HELP = "HELP" # 帮助命令, 暂时不用管
     NOOP = "NOOP" # 无操作命令
-    QUIT = "QUIT" # 退出命令
-    AUTH = "AUTH" # 身份验证命令
+    QUIT = "QUIT" # 退出命令, 无需处理
+    AUTH = "AUTH" # 身份验证命令， 特殊指令
     STARTTLS = "STARTTLS" # 启动TLS命令
+    
     SIZE = "SIZE" # 邮件大小限制命令
     DSN = "DSN" # 交付状态通知命令
     ETRN = "ETRN" # 电子邮件传输命令
