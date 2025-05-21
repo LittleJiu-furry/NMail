@@ -10,7 +10,7 @@ StrOrBytesPath: TypeAlias = str | bytes | PathLike[str] | PathLike[bytes]
 _PasswordType: TypeAlias = Callable[[], str | bytes | bytearray] | str | bytes | bytearray
 
 class AsyncSocketServer:
-    def __init__(self, port: int, cretfile: StrOrBytesPath, keyfile: StrOrBytesPath, password: Optional[_PasswordType] = None):
+    def __init__(self, port: int, certfile: StrOrBytesPath, keyfile: StrOrBytesPath, password: Optional[_PasswordType] = None):
         super().__init__()
         logger.info(f"Server set port to {port}")
         self.port = port
@@ -18,7 +18,7 @@ class AsyncSocketServer:
         self.isConnected = False
         self.useSSL = False
         # SSL证书和密钥文件
-        self.cretfile = cretfile
+        self.certfile = certfile
         self.keyfile = keyfile
         self.password = password
     
@@ -48,7 +48,7 @@ class AsyncSocketServer:
             logger.warning("Server is already running")
             return
         secureContext = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-        secureContext.load_cert_chain(certfile=self.cretfile, keyfile=self.keyfile, password=self.password)
+        secureContext.load_cert_chain(certfile=self.certfile, keyfile=self.keyfile, password=self.password)
         self.useSSL = True
         self.server = await asyncio.start_server(
             self.__handler, "0.0.0.0", self.port, ssl = secureContext
