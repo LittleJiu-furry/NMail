@@ -10,6 +10,9 @@ logger = createLogger()
 sessionEvent = SessionEventManager()
 ctx = AppContext()
 
+def getSessionEventManager():
+    return sessionEvent
+
 # 以下是参考代码
 # sessionEvent.subscribeDecorator() 的参数是字符串
 # 要求写成onEVENT，EVENT是你要处理的 SMTP 指令
