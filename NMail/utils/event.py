@@ -45,6 +45,7 @@ class EventManager:
         else:
             return wrapper
         
-
     def clear(self):
         self._listeners.clear()
+
+    
