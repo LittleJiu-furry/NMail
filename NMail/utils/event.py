@@ -48,3 +48,5 @@ class EventManager:
         
     def clear(self):
         self._listeners.clear()
+
+    
