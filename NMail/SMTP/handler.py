@@ -66,13 +66,17 @@ async def handleMAIL(session: SessionModel, MAIL_command: str, mail_address: str
         logger.warning(f"Invalid email address format: {address}")
         await session.send(550, "Invalid email address format")
         return
-    session.send(250, "OK")
-    session.getEmail().setFrom(address)
+    await session.send(250, "OK")
+    # TODO 这是一个标记，这里还没做完！
+    session.getEmail().setFrom(address)  # type: ignore
 
 
 @sessionEvent.subscribeDecorator(f"on{type.SMTPCommand.RCPT}")
 async def handleRCPT(session: SessionModel, RCPT_command: str, mail_address: str):
     logger.info(f"RCPT {RCPT_command} {mail_address}")
+    if session.getEmail() is None:
+        await session.send(550, "Currently not accepting this instruction")
+        return
     counter = False
     address = ""
     for i in mail_address:
@@ -88,22 +92,26 @@ async def handleRCPT(session: SessionModel, RCPT_command: str, mail_address: str
         logger.warning(f"Invalid email address format: {address}")
         await session.send(550, "Invalid email address format")
         return
-    session.send(250, "OK")
-    session.getEmail().setTo(address)
+    session.getEmail().setTo(address)  # type: ignore
+    await session.send(250, "OK")
 
 
 @sessionEvent.subscribeDecorator(f"on{type.SMTPCommand.DATA}")
 async def handleDATA(session: SessionModel, introduced_text: str):
     logger.info(f"DATA \n {introduced_text}")
+    if session.getEmail() is None:
+        await session.send(550, "Currently not accepting this instruction")
+        return
     text = introduced_text[: (len(introduced_text) - 4)]
     msg = Parser().parsestr(text)
     mail = {"From": msg["From"], "To": msg["To"], "Subject": msg["Subject"]}
-    session.getEmail().setHeaders(mail)
+    session.getEmail().setHeaders(mail)  # type: ignore
     for part in msg.walk():
         if part.get_content_type() == "text/plain":
-            session.getEmail().setBody = part.get_payload(decode=True).decode()
+
+            session.getEmail().setBody(part.get_payload(decode=True).decode())
             break
-    session.emit("_inspect")
+    await session.emit("_inspect")
 
 
 @sessionEvent.subscribeDecorator("_inspect")
