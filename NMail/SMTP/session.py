@@ -5,6 +5,7 @@ from .event import SessionEventManager
 from typing import Optional, TYPE_CHECKING
 from .type import SMTPCommand, ExtenedSMTPCommand
 from .sessionModel import SessionModel
+from .emailModule import Email
 
 if TYPE_CHECKING:
     from .baseServer import baseSMTPService
@@ -20,6 +21,7 @@ class SMTPSession:
         self.server = server
         self.inDataMode = False # 是否处于数据模式
         self.requireClose = False
+        self.email = None
     
     async def send(self, code: int, message: str):
         """
@@ -27,8 +29,21 @@ class SMTPSession:
         :param code: SMTP响应码
         :param message: SMTP响应消息
         """
-        logger.info(f"calling send from port {self.server.port}")
         self.writer.write(f"{code} {message}\r\n".encode())
+        await self.writer.drain()
+
+    async def sendLines(self, code: int, lines: list[str]):
+        """
+        发送SMTP响应
+        :param code: SMTP响应码
+        :param lines: SMTP响应消息列表
+        """
+        if (len(lines) == 0):
+            return
+        if (len(lines) >= 2):
+            for line in lines[:-1]:
+                self.writer.write(f"{code}-{line}\r\n".encode())
+        self.writer.write(f"{code} {lines[-1]}\r\n".encode())
         await self.writer.drain()
 
     async def sayHello(self):
@@ -191,7 +206,13 @@ class SMTPSession:
                 await self.callEmit(f"on{SMTPCommand.BDAT}", *args)
                 continue
 
-
+    def createEmail(self):
+        """
+        创建邮件对象
+        :return: 邮件对象
+        """
+        self.email = Email()
+        return self.email
 
 
 
