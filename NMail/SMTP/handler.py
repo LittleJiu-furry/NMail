@@ -82,13 +82,10 @@ async def handleDATA(session: SessionModel, introduced_text: str):
     logger.info(f"DATA \n {introduced_text}")
     text = introduced_text[: (len(introduced_text) - 4)]
     msg = Parser().parsestr(text)
-    mail_from = msg["From"]
-    mail_to = msg["To"]
-    mail_subject = msg["Subject"]
-    mail_body = ""
+    mail = {"from": msg["From"], "to": msg["To"], "subject": msg["Subject"], "body": ""}
     for part in msg.walk():
         if part.get_content_type() == "text/plain":
-            mail_body = part.get_payload(decode=True).decode()
+            mail["body"] = part.get_payload(decode=True).decode()
             break
 
 
