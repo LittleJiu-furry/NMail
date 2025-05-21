@@ -5,10 +5,17 @@ from typing import Optional
 from . import type
 from ..utils.context import AppContext
 from .sessionModel import SessionModel
+import email
+from email.parser import Parser
 
 logger = createLogger()
 sessionEvent = SessionEventManager()
 ctx = AppContext()
+
+
+def getSessionEventManager():
+    return sessionEvent
+
 
 # 以下是参考代码
 # sessionEvent.subscribeDecorator() 的参数是字符串
@@ -25,14 +32,73 @@ ctx = AppContext()
 # def syncFunction(session):
 #     ...
 
+
 @sessionEvent.subscribeDecorator(f"on{type.SMTPCommand.HELO}")
 async def handleHELO(session: SessionModel, client_domain: str):
     logger.info(f"Client({client_domain}) Hello")
     await session.send(250, f"{ctx.get("server_domain")}")
 
+
 @sessionEvent.subscribeDecorator(f"on{type.SMTPCommand.EHLO}")
 async def handleEHLO(session: SessionModel, client_domain: str):
     logger.info(f"Client({client_domain}) Extened Hello")
     # TODO: 发送多行
-    
-    
+
+
+@sessionEvent.subscribeDecorator(f"on{type.SMTPCommand.MAIL}")
+async def handleMAIL(session: SessionModel, MAIL_command: str, mail_address: str):
+    logger.info(f"MAIL {MAIL_command} {mail_address}")
+    counter = False
+    address = ""
+    for i in mail_address:
+        if counter == False and i != "<":
+            continue
+        counter = True
+        if i != ">":
+            address += i
+        else:
+            break
+        # TODO 记得储存这个地址喵
+
+
+@sessionEvent.subscribeDecorator(f"on{type.SMTPCommand.RCPT}")
+async def handleRCPT(session: SessionModel, RCPT_command: str, mail_address: str):
+    logger.info(f"RCPT {RCPT_command} {mail_address}")
+    counter = False
+    address = ""
+    for i in mail_address:
+        if counter == False and i != "<":
+            continue
+        counter = True
+        if i != ">":
+            address += i
+        else:
+            break
+        # TODO 记得储存这个地址喵
+
+
+@sessionEvent.subscribeDecorator(f"on{type.SMTPCommand.DATA}")
+async def handleDATA(session: SessionModel, introduced_text: str):
+    logger.info(f"DATA \n {introduced_text}")
+    text = introduced_text[: (len(introduced_text) - 4)]
+    msg = Parser().parsestr(text)
+    mail_from = msg["From"]
+    mail_to = msg["To"]
+    mail_subject = msg["Subject"]
+    mail_body = ""
+    for part in msg.walk():
+        if part.get_content_type() == "text/plain":
+            mail_body = part.get_payload(decode=True).decode()
+            break
+
+
+@sessionEvent.subscribeDecorator(f"on{type.SMTPCommand.RSET}")
+async def handleRSET(session: SessionModel):
+    logger.info(f"RSTE")
+    # await session.send(250, "OK")
+
+
+@sessionEvent.subscribeDecorator(f"on{type.SMTPCommand.NOOP}")
+async def handleNOOP(session: SessionModel):
+    logger.info(f"NOOP")
+    # await session.send(250, "OK")
