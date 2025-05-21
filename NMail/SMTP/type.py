@@ -14,17 +14,11 @@ class SMTPCommand(StrEnum):
     QUIT = "QUIT" # 退出命令, 无需处理
     AUTH = "AUTH" # 身份验证命令， 特殊指令
     STARTTLS = "STARTTLS" # 启动TLS命令
-    
-    SIZE = "SIZE" # 邮件大小限制命令
-    DSN = "DSN" # 交付状态通知命令
-    ETRN = "ETRN" # 电子邮件传输命令
-    PIPELINING = "PIPELINING" # 管道命令
-    Eight_BITMIME = "8BITMIME" # 8位MIME命令
-    BINARYMIME = "BINARYMIME" # 二进制MIME命令
-    CHUNKING = "CHUNKING" # 分块命令
-    DELIVERBY = "DELIVERBY" # 交付时间限制命令
-    ENHANCEDSTATUSCODES = "ENHANCEDSTATUSCODES" # 扩展状态码命令
-    SMTPUTF8 = "SMTPUTF8" # SMTPUTF8命令
+
+    # 扩展命令
+    ETRN = "ETRN" # 立即投递
+    BDAT = "BDAT" # 分块传输
+
 
 class ExtenedSMTPCommand(StrEnum):
     SERVER_GET_MAIL_STATUS = "SERVER_GET_MAIL_STATUS" # 获取指定邮件的状态指令

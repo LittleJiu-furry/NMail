@@ -4,6 +4,7 @@ from typing import Callable
 from os import PathLike
 from ..utils.logger import createLogger
 from .session import SMTPSession
+from .event import SessionEventManager
 
 StrOrBytesPath = str | bytes | PathLike[str] | PathLike[bytes]
 _PasswordType = Callable[[], str | bytes | bytearray] | str | bytes | bytearray | None
@@ -11,8 +12,9 @@ _PasswordType = Callable[[], str | bytes | bytearray] | str | bytes | bytearray 
 logger = createLogger()
 
 class baseSMTPService(AsyncSocketServer):
-    def __init__(self, port: int, cretfile: StrOrBytesPath, keyfile: StrOrBytesPath, password: _PasswordType = None):
-        super().__init__(port, cretfile, keyfile, password)
+    def __init__(self, sessionEvent: SessionEventManager, port: int, certfile: StrOrBytesPath, keyfile: StrOrBytesPath, password: _PasswordType = None):
+        super().__init__(port, certfile, keyfile, password)
+        self.sessionEvent = sessionEvent
 
     async def onStart(self):
         logger.info(f"SMTP server started on port {self.port}")
@@ -22,6 +24,6 @@ class baseSMTPService(AsyncSocketServer):
 
     async def onHandle(self, reader: StreamReader, writer: StreamWriter):
         logger.info(f"SMTP server handling connection from {writer.get_extra_info('peername')}")
-        connection = SMTPSession(reader, writer)
+        connection = SMTPSession(self, reader, writer)
         await connection.sayHello()
         await connection.service()
