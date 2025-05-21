@@ -1,4 +1,5 @@
 import asyncio
+import re
 from ..utils.logger import createLogger
 from .event import SessionEventManager
 from typing import Optional
@@ -7,6 +8,7 @@ from ..utils.context import AppContext
 from .sessionModel import SessionModel
 import email
 from email.parser import Parser
+from .emailModule import Email
 
 logger = createLogger()
 sessionEvent = SessionEventManager()
@@ -49,6 +51,7 @@ async def handleEHLO(session: SessionModel, client_domain: str):
 async def handleMAIL(session: SessionModel, MAIL_command: str, mail_address: str):
     logger.info(f"MAIL {MAIL_command} {mail_address}")
     counter = False
+    session.createEmail()
     address = ""
     for i in mail_address:
         if counter == False and i != "<":
@@ -58,7 +61,13 @@ async def handleMAIL(session: SessionModel, MAIL_command: str, mail_address: str
             address += i
         else:
             break
-        # TODO 记得储存这个地址喵
+    pattern = r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"
+    if not re.match(pattern, address):
+        logger.warning(f"Invalid email address format: {address}")
+        await session.send(550, "Invalid email address format")
+        return
+    session.send(250, "OK")
+    session.getEmail().setFrom(address)
 
 
 @sessionEvent.subscribeDecorator(f"on{type.SMTPCommand.RCPT}")
@@ -74,7 +83,13 @@ async def handleRCPT(session: SessionModel, RCPT_command: str, mail_address: str
             address += i
         else:
             break
-        # TODO 记得储存这个地址喵
+    pattern = r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"
+    if not re.match(pattern, address):
+        logger.warning(f"Invalid email address format: {address}")
+        await session.send(550, "Invalid email address format")
+        return
+    session.send(250, "OK")
+    session.getEmail().setTo(address)
 
 
 @sessionEvent.subscribeDecorator(f"on{type.SMTPCommand.DATA}")
@@ -82,11 +97,17 @@ async def handleDATA(session: SessionModel, introduced_text: str):
     logger.info(f"DATA \n {introduced_text}")
     text = introduced_text[: (len(introduced_text) - 4)]
     msg = Parser().parsestr(text)
-    mail = {"from": msg["From"], "to": msg["To"], "subject": msg["Subject"], "body": ""}
+    mail = {"From": msg["From"], "To": msg["To"], "Subject": msg["Subject"]}
+    session.getEmail().setHeaders(mail)
     for part in msg.walk():
         if part.get_content_type() == "text/plain":
-            mail["body"] = part.get_payload(decode=True).decode()
+            session.getEmail().setBody = part.get_payload(decode=True).decode()
             break
+    session.emit("_inspect")
+
+
+@sessionEvent.subscribeDecorator("_inspect")
+async def isInspect(session: SessionModel, introduced_text: str): ...
 
 
 @sessionEvent.subscribeDecorator(f"on{type.SMTPCommand.RSET}")
