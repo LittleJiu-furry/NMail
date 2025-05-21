@@ -136,3 +136,4 @@ cython_debug/
 
 # test files
 test/
+*.test.py
