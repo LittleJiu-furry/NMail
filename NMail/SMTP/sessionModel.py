@@ -1,12 +1,15 @@
 import asyncio
-from .session import SMTPSession
+from typing import TYPE_CHECKING
 import ssl
 from ..utils.logger import createLogger
+
+if TYPE_CHECKING:
+    from .session import SMTPSession
 
 logger = createLogger()
 
 class SessionModel:
-    def __init__(self, session: SMTPSession):
+    def __init__(self, session: "SMTPSession"):
         self.session = session
 
     async def send(self, code: int, message: str):

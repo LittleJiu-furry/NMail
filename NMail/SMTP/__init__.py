@@ -12,12 +12,18 @@ class SMTPServer:
 
     async def start(self):
         logger.info("Starting SMTP server...")
-        await asyncio.gather(
-            self.server465.startWithSSL(),
-            self.server587.start()
-        )
+        tasks = [
+            asyncio.create_task(self.server465.start(), name="SMTPServer465"),
+            asyncio.create_task(self.server587.start(), name="SMTPServer587"),
+        ]
+        for task in tasks:
+            try:
+                await task
+            except Exception as e:
+                logger.error(f"Error when starting {task.get_name()}: {e}")
 
     async def stop(self):
         logger.info("Stopping SMTP server...")
         await self.server465.stop()
         await self.server587.stop()
+
