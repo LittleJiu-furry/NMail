@@ -4,6 +4,8 @@ import asyncio
 from ..utils.logger import createLogger
 
 logger = createLogger()
+
+
 class SMTPServer:
     def __init__(self):
         self.sessionEvent = handler.getSessionEventManager()
@@ -13,6 +15,7 @@ class SMTPServer:
     async def start(self):
         logger.info("Starting SMTP server...")
         tasks = [
+            # asyncio.create_task(self.server465.startWithSSL(), name="SMTPServer465"),
             asyncio.create_task(self.server465.start(), name="SMTPServer465"),
             asyncio.create_task(self.server587.start(), name="SMTPServer587"),
         ]
@@ -26,4 +29,3 @@ class SMTPServer:
         logger.info("Stopping SMTP server...")
         await self.server465.stop()
         await self.server587.stop()
-
