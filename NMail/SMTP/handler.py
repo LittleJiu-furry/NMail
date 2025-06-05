@@ -45,13 +45,25 @@ def getSessionEventManager():
 
 @sessionEvent.subscribeDecorator(f"on{type.SMTPCommand.HELO}")
 async def handleHELO(session: SessionModel, client_domain: str):
+    if client_domain is None or not client_domain.strip():
+        logger.warning("(handleHELO)client_domain is None")
+        await session.send(501, "Missing required argument")
+        return
     logger.info(f"Client({client_domain}) Hello")
+    session.setHELO_username(client_domain)
+    session.resetEmail()  # 中断当前操作
     await session.send(250, f"{ctx.get("server_domain")}")
 
 
 @sessionEvent.subscribeDecorator(f"on{type.SMTPCommand.EHLO}")
 async def handleEHLO(session: SessionModel, client_domain: str):
+    if client_domain is None or not client_domain.strip():
+        logger.warning("(handleHELO)client_domain is None")
+        await session.send(501, "Missing required argument")
+        return
     logger.info(f"Client({client_domain}) Extened Hello")
+    session.setHELO_username(client_domain)
+    session.resetEmail()  # 中断当前操作
     send_str = [""]
     await session.sendLines(250, send_str)
     # TODO: 嘿，有谁完善一下这个发送的内容吗？

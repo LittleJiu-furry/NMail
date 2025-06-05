@@ -13,6 +13,9 @@ class SessionModel:
     def __init__(self, session: "SMTPSession"):
         self.session = session
 
+    def setHELO_username(self, name: str):
+        self.session.HELO_username = name
+
     async def send(self, code: int, message: str):
         """
         发送SMTP响应

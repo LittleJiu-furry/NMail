@@ -28,6 +28,7 @@ class SMTPSession:
         self.requireClose = False
         self.email = None
         self.isUpgreaded = False
+        self.HELO_username = ""
 
     async def send(self, code: int, message: str):
         """
